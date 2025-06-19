@@ -79,9 +79,16 @@ function App() {
     e.preventDefault();
     
     // Basic validation
-    if (!inquiryForm.name || !inquiryForm.email || !inquiryForm.phone || 
+    if (!inquiryForm.name.trim() || !inquiryForm.email.trim() || !inquiryForm.phone.trim() || 
         !inquiryForm.start_date || !inquiryForm.end_date) {
-      alert('Please fill in all required fields.');
+      alert('❌ Please fill in all required fields.');
+      return;
+    }
+    
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(inquiryForm.email)) {
+      alert('❌ Please enter a valid email address.');
       return;
     }
     
@@ -89,14 +96,15 @@ function App() {
     const startDate = new Date(inquiryForm.start_date);
     const endDate = new Date(inquiryForm.end_date);
     const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to compare dates only
     
     if (startDate < today) {
-      alert('Start date cannot be in the past.');
+      alert('❌ Start date cannot be in the past.');
       return;
     }
     
     if (endDate <= startDate) {
-      alert('End date must be after start date.');
+      alert('❌ End date must be after start date.');
       return;
     }
     
@@ -114,9 +122,13 @@ function App() {
         body: JSON.stringify(inquiryData),
       });
       
+      const result = await response.json();
+      
       if (response.ok) {
-        const result = await response.json();
+        // Success - show message and close modal
         alert('🎉 Inquiry submitted successfully! The owner will contact you soon.');
+        
+        // Close modal and reset form
         setShowInquiryModal(false);
         setSelectedListing(null);
         setInquiryForm({
@@ -128,7 +140,7 @@ function App() {
           message: ''
         });
       } else {
-        throw new Error(`HTTP ${response.status}`);
+        throw new Error(result.message || `HTTP ${response.status}`);
       }
     } catch (error) {
       console.error('Error submitting inquiry:', error);
