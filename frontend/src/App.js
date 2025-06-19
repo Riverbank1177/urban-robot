@@ -77,6 +77,29 @@ function App() {
 
   const submitInquiry = async (e) => {
     e.preventDefault();
+    
+    // Basic validation
+    if (!inquiryForm.name || !inquiryForm.email || !inquiryForm.phone || 
+        !inquiryForm.start_date || !inquiryForm.end_date) {
+      alert('Please fill in all required fields.');
+      return;
+    }
+    
+    // Date validation
+    const startDate = new Date(inquiryForm.start_date);
+    const endDate = new Date(inquiryForm.end_date);
+    const today = new Date();
+    
+    if (startDate < today) {
+      alert('Start date cannot be in the past.');
+      return;
+    }
+    
+    if (endDate <= startDate) {
+      alert('End date must be after start date.');
+      return;
+    }
+    
     try {
       const inquiryData = {
         ...inquiryForm,
@@ -92,8 +115,10 @@ function App() {
       });
       
       if (response.ok) {
-        alert('Inquiry submitted successfully! The owner will contact you soon.');
+        const result = await response.json();
+        alert('🎉 Inquiry submitted successfully! The owner will contact you soon.');
         setShowInquiryModal(false);
+        setSelectedListing(null);
         setInquiryForm({
           name: '',
           email: '',
@@ -102,10 +127,12 @@ function App() {
           end_date: '',
           message: ''
         });
+      } else {
+        throw new Error(`HTTP ${response.status}`);
       }
     } catch (error) {
       console.error('Error submitting inquiry:', error);
-      alert('Error submitting inquiry. Please try again.');
+      alert('❌ Error submitting inquiry. Please try again.');
     }
   };
 
