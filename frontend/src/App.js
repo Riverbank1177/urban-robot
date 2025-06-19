@@ -230,9 +230,22 @@ function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center mb-8">
             <h3 className="text-2xl font-bold text-gray-900">
-              {selectedCategory ? `${categories.find(c => c.id === selectedCategory)?.name || 'Category'} Rentals` : 'All Rentals'}
+              {selectedCategory 
+                ? `${categories.find(c => c.id === selectedCategory)?.name || selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)} Rentals`
+                : 'All Rentals'
+              }
             </h3>
-            <div className="text-gray-600">{listings.length} listings found</div>
+            <div className="text-gray-600">
+              {listings.length} listing{listings.length !== 1 ? 's' : ''} found
+              {selectedCategory && (
+                <button
+                  onClick={() => handleCategoryFilter('')}
+                  className="ml-2 text-blue-600 hover:text-blue-800 underline"
+                >
+                  Clear filter
+                </button>
+              )}
+            </div>
           </div>
           
           {loading ? (
