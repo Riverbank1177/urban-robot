@@ -1,7 +1,7 @@
 import requests
 import unittest
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 
 class RentalMarketplaceAPITest(unittest.TestCase):
     def setUp(self):
