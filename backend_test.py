@@ -184,5 +184,108 @@ class RentalMarketplaceAPITest(unittest.TestCase):
             else:
                 print(f"⚠️ Category '{category_id}' has no listings")
 
-if __name__ == "__main__":
-    unittest.main(verbosity=2)
+    def test_08_inquiry_validation_past_date(self):
+        """Test inquiry validation with past start date"""
+        print("\n🔍 Testing inquiry validation with past start date...")
+        
+        # Get a listing ID to use
+        listings_response = requests.get(f"{self.base_url}/api/listings")
+        listings = listings_response.json()
+        if not listings:
+            self.fail("No listings available to test inquiry validation")
+        
+        listing_id = listings[0]["id"]
+        
+        # Create inquiry data with past start date
+        yesterday = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
+        future_date = (datetime.now() + timedelta(days=5)).strftime('%Y-%m-%d')
+        
+        invalid_inquiry = {
+            **self.test_inquiry,
+            "listing_id": listing_id,
+            "start_date": yesterday,
+            "end_date": future_date
+        }
+        
+        # Submit inquiry with invalid date
+        response = requests.post(
+            f"{self.base_url}/api/inquiries",
+            headers=self.headers,
+            json=invalid_inquiry
+        )
+        
+        # The API should accept this since validation is done on frontend
+        # But we're testing to confirm the behavior
+        self.assertEqual(response.status_code, 200)
+        print("✅ Backend accepts inquiry with past date (validation is on frontend)")
+
+    def test_09_inquiry_validation_end_before_start(self):
+        """Test inquiry validation with end date before start date"""
+        print("\n🔍 Testing inquiry validation with end date before start date...")
+        
+        # Get a listing ID to use
+        listings_response = requests.get(f"{self.base_url}/api/listings")
+        listings = listings_response.json()
+        if not listings:
+            self.fail("No listings available to test inquiry validation")
+        
+        listing_id = listings[0]["id"]
+        
+        # Create inquiry data with end date before start date
+        future_date1 = (datetime.now() + timedelta(days=5)).strftime('%Y-%m-%d')
+        future_date2 = (datetime.now() + timedelta(days=2)).strftime('%Y-%m-%d')
+        
+        invalid_inquiry = {
+            **self.test_inquiry,
+            "listing_id": listing_id,
+            "start_date": future_date1,
+            "end_date": future_date2
+        }
+        
+        # Submit inquiry with invalid dates
+        response = requests.post(
+            f"{self.base_url}/api/inquiries",
+            headers=self.headers,
+            json=invalid_inquiry
+        )
+        
+        # The API should accept this since validation is done on frontend
+        # But we're testing to confirm the behavior
+        self.assertEqual(response.status_code, 200)
+        print("✅ Backend accepts inquiry with end date before start date (validation is on frontend)")
+
+    def test_10_inquiry_with_test_data(self):
+        """Test inquiry with the specified test data"""
+        print("\n🔍 Testing inquiry with specified test data...")
+        
+        # Get a listing ID to use
+        listings_response = requests.get(f"{self.base_url}/api/listings")
+        listings = listings_response.json()
+        if not listings:
+            self.fail("No listings available to test inquiry submission")
+        
+        listing_id = listings[0]["id"]
+        
+        # Create inquiry with the specified test data
+        test_inquiry_data = {
+            "name": "Alice Johnson",
+            "email": "alice@test.com",
+            "phone": "555-123-4567",
+            "start_date": "2025-04-15",
+            "end_date": "2025-04-20",
+            "message": "Looking forward to renting this!",
+            "listing_id": listing_id
+        }
+        
+        # Submit inquiry
+        response = requests.post(
+            f"{self.base_url}/api/inquiries",
+            headers=self.headers,
+            json=test_inquiry_data
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        result = response.json()
+        self.assertIn("message", result)
+        self.assertIn("inquiry_id", result)
+        print("✅ Test inquiry submitted successfully")
