@@ -288,5 +288,7 @@ class RentalMarketplaceAPITest(unittest.TestCase):
         result = response.json()
         self.assertIn("message", result)
         self.assertIn("inquiry_id", result)
-        print("✅ Test inquiry submitted successfully")if __name__ == "__main__":
+        print("✅ Test inquiry submitted successfully")
+
+if __name__ == "__main__":
     unittest.main(verbosity=2)
